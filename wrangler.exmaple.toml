@@ -12,4 +12,4 @@ kv_namespaces = [
     { binding = "LINKCOUNT", id = "<YOUR-KV-ID-HERE>", preview_id = "<YOUR-PREVIEW-KV-ID-HERE>" }
 ]
 
-vars = { "FALLBACK" = "https://hack13.me/" }
+vars = { "FALLBACK" = "<YOUR-FALLBACK-ADDRESS>" }
