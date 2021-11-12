@@ -1,6 +1,6 @@
 # Simple URL Shortner 
 
-I wanted to save some money, and learn some more JavaScript as well as learn how to use KV's... I figured why not move away from hosting YOURLS and move my shortning system over ot Cloudflare Workers. This allows me to save money on VPS hosting running a PHP web app... I figured I would share this app for others who just want a simple URL Shortner with a counter.
+I wanted to save some money, and learn some more JavaScript as well as learn how to use KV's... I figured why not move away from hosting YOURLS and move my shortening system over to Cloudflare Workers. This allows me to save money on VPS hosting running a PHP web app... I figured I would share this app for others who just want a simple URL Shortener with a counter.
 
 **Cons:**
  - There is no location of where people clicked
