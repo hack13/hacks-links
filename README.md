@@ -11,6 +11,32 @@ I wanted to save some money, and learn some more JavaScript as well as learn how
  - Simple and easy to use
  - Works with apps like [Short Menu](https://hack13.link/DS9QH)
 
+## How To Use
+
+### Add Url
+POST Request **NOTE:** You must send your API Token via header "X-API-KEY"
+```json
+{
+    "longURL" : "https://some-long.site/with/some/crazy/long-crazy-address",
+    "customURI" : "crazysite" //optional
+}
+```
+Example Response
+```json
+{
+    "shortul" : "https://linksite.com/crazysite"
+}
+```
+### Visit Site
+GET Request
+```
+https://linksite.com/crazysite"
+```
+Example Response
+```
+301 Redirect -> https://some-long.site/with/some/crazy/long-crazy-address
+```
+
 ## Configuration
 
 **Wrangler Config**
