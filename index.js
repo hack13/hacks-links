@@ -89,7 +89,7 @@ async function addURL(request) {
       shortID = customURI
     }
   
-    let shortURI = `https://hack13.link/${shortID}`
+    let shortURI = `${SHORTDOMAIN}/${shortID}`
   
     await LINKS.put(shortID, longURL)
   

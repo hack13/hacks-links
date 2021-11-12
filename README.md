@@ -41,7 +41,8 @@ Example Response
 
 **Wrangler Config**
  - VARS
-   - FALLBACK: Full URL to a page people should end up if the short URL doesn't exist
+   - FALLBACK: Full URL to a page people should end up if the short URL doesn't exist ex: _https://google.com_
+   - SHORTDOMAIN: The domain you want to use for your short urls ex: _https://example.com_
  - SECRETS
    - TOKEN: This is the super secret API Key you should generate to allow only those authorized to add links using header "X-API-KEY"
 
