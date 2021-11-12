@@ -1,0 +1,15 @@
+name = "hacks-links"
+type = "javascript"
+
+account_id = "<YOUR-ACCOUNT-ID-HERE>"
+workers_dev = true
+route = "<YOUR-CUSTOM-ROUTE-HERE>"
+zone_id = ""
+compatibility_date = "2021-11-07"
+
+kv_namespaces = [
+    { binding = "LINKS", id = "<YOUR-KV-ID-HERE>", preview_id = "<YOUR-PREVIEW-KV-ID-HERE>" },
+    { binding = "LINKCOUNT", id = "<YOUR-KV-ID-HERE>", preview_id = "<YOUR-PREVIEW-KV-ID-HERE>" }
+]
+
+vars = { "FALLBACK" = "https://hack13.me/" }
