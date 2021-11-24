@@ -15,7 +15,7 @@ I wanted to save some money, and learn some more JavaScript as well as learn how
 
 ### Add Url
 POST Request **NOTE:** You must send your API Token via header "X-API-KEY"
-```json
+```json3
 {
     "action" : "add",
     "longURL" : "https://some-long.site/with/some/crazy/long-crazy-address",
@@ -23,7 +23,7 @@ POST Request **NOTE:** You must send your API Token via header "X-API-KEY"
 }
 ```
 Example Response
-```json
+```json3
 {
     "shortul" : "https://linksite.com/crazysite"
 }
@@ -40,17 +40,17 @@ Example Response
 
 ### Metrics
 POST Request **NOTE:** You must send your API Token via header "X-API-KEY"
-```json
+```json3
 {
     "action" : "metrics"
 }
 ```
 Example Response:
-```json
+```json3
 {
     "ShortID": "S8t71",
     "LongURL": "https://hack13.me/2021/10/cloudflare-workers-and-pages/",
-    "Visits": null // From previous release and never called this will return null, but there is a check that will make it start counting upon first hit
+    "Visits": null //From previous release and never called this will return null, but there is a check that will make it start counting upon first hit
 }{
     "ShortID": "test",
     "LongURL": "https://hack13.me/",
