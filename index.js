@@ -74,39 +74,45 @@ async function tokenCheck(request) {
  * @param {*} request 
  * @returns Returns a Short URL Address 
  */
-async function addURL(request) {
-  const apicheck = await tokenCheck(request)
+async function addURL(json) {
+  //let jsonBody = json
+  let longURL = json.longURL.replace(/(\r\n|\n|\r)/gm, "")
+  let customURI = json.customURI
 
-  if ( apicheck == true ) {
-    const reqBody = await readRequestBody(request)
-    const jsonBody = JSON.parse(reqBody)
-    let longURL = jsonBody.longURL.replace(/(\r\n|\n|\r)/gm, "")
-    let customURI = jsonBody.customURI
-  
-    if ( customURI == null ) {
-      shortID = await makeURI(5)
-    } else {
-      shortID = customURI
-    }
-  
-    let shortURI = `${SHORTDOMAIN}/${shortID}`
-  
-    await LINKS.put(shortID, longURL)
-  
-    return new Response(JSON.stringify({
-      "shorturl" : shortURI 
-    }),{
-      headers: corsHeaders
-    })
-
+  if ( customURI == null ) {
+    shortID = await makeURI(5)
   } else {
-    return new Response(JSON.stringify({
-      "message" : "Invalid API Token"
-    }),{
-      headers: corsHeaders
-    })
+    shortID = customURI
   }
 
+  let shortURI = `${SHORTDOMAIN}/${shortID}`
+
+  await LINKS.put(shortID, longURL)
+  await LINKCOUNT.put(shortID, 0)
+
+  return JSON.stringify({
+    "shorturl" : shortURI 
+  })
+
+}
+
+async function listMetrics(){
+  let shortIDs = await LINKS.list()
+  let shortIDsLength = shortIDs.keys.length
+  let buildup = ""
+  console.log(shortIDs.keys[0].name)
+
+  for (let i = 0 ; i < shortIDsLength; i++) {
+    let count = await LINKCOUNT.get(shortIDs.keys[i].name)
+    let longurl = await LINKS.get(shortIDs.keys[i].name)
+    buildup += JSON.stringify({
+      "ShortID" : shortIDs.keys[i].name,
+      "LongURL" : longurl,
+      "Visits" : count
+    })
+  }
+  console.log(buildup)
+  return buildup
 }
 
 /**
@@ -121,16 +127,52 @@ async function shortResponse(request) {
   const location = await LINKS.get(path)
   let linkcount = await LINKCOUNT.get(path)
 
-  // If there isn't already a link counter, make it
-  if ( linkcount == null ) {
-    await LINKCOUNT.put(path, 0)
-    linkcount = await LINKCOUNT.get(path)
-  }
   if (location) {
+    // If there isn't already a link counter, make it
+    if ( linkcount == null ) {
+      await LINKCOUNT.put(path, 0)
+      linkcount = await LINKCOUNT.get(path)
+    }
     await LINKCOUNT.put(path, parseInt(linkcount) + 1) // count up the times quried
     return Response.redirect(location, 301) // return the long url
   }
   return Response.redirect(FALLBACK, 301) // return the fallback
+}
+
+/**
+ * Handle the request checking for API Token and then route to correct function
+ * @param {*} request 
+ * @returns 
+ */
+async function routerMe(request){
+  const apicheck = await tokenCheck(request)
+  if ( apicheck == true ) {
+    const reqBody = await readRequestBody(request)
+    let jsonBody = JSON.parse(reqBody)
+    let action = jsonBody.action
+    
+    if ( action == "add" ){
+      newshort = await addURL(jsonBody)
+      console.log('broke here 3')
+      return new Response(newshort)
+    } else if ( action == "metrics" ){
+      console.log('broke here 4')
+      metrics = await listMetrics()
+      return new Response(metrics)
+    } else {
+      return new Response(JSON.stringify({
+        "message" : "Invalid Action"
+      }),{
+        headers: corsHeaders
+      })
+    }
+  } else {
+    return new Response(JSON.stringify({
+      "message" : "Invalid API Token"
+    }),{
+      headers: corsHeaders
+    })
+  }
 }
 
 addEventListener("fetch", event => {
@@ -138,7 +180,7 @@ addEventListener("fetch", event => {
   const { url } = request
 
   if (request.method === "POST") {
-    return event.respondWith(addURL(request))
+    return event.respondWith(routerMe(request))
   }
   else if (request.method === "GET") {
     return event.respondWith(shortResponse(request))
