@@ -31,7 +31,7 @@ Example Response
 ### Visit Site
 GET Request
 ```
-https://linksite.com/crazysite"
+https://linksite.com/crazysite
 ```
 Example Response
 ```
