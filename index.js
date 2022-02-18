@@ -2,6 +2,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
   "Access-Control-Max-Age": "86400",
+  "Content-Type": "application/json"
 }
 
 /**
@@ -99,20 +100,19 @@ async function addURL(json) {
 async function listMetrics(){
   let shortIDs = await LINKS.list()
   let shortIDsLength = shortIDs.keys.length
-  let buildup = ""
-  console.log(shortIDs.keys[0].name)
+  let buildup = []
 
   for (let i = 0 ; i < shortIDsLength; i++) {
-    let count = await LINKCOUNT.get(shortIDs.keys[i].name)
-    let longurl = await LINKS.get(shortIDs.keys[i].name)
-    buildup += JSON.stringify({
+    let count = await LINKCOUNT.get(shortIDs.keys[i].name, {cacheTtl: 3600})
+    let longurl = await LINKS.get(shortIDs.keys[i].name, {cacheTtl: 86400})
+    buildup.push({
       "ShortID" : shortIDs.keys[i].name,
       "LongURL" : longurl,
       "Visits" : count
     })
   }
-  console.log(buildup)
-  return buildup
+  testing = JSON.stringify(buildup)
+  return testing
 }
 
 /**
@@ -124,7 +124,7 @@ async function listMetrics(){
 async function shortResponse(request) {
   const requestURL = new URL(request.url)
   const path = requestURL.pathname.split("/")[1]
-  const location = await LINKS.get(path)
+  const location = await LINKS.get(path, {cacheTtl: 86400})
   let linkcount = await LINKCOUNT.get(path)
 
   if (location) {
@@ -137,6 +137,43 @@ async function shortResponse(request) {
     return Response.redirect(location, 301) // return the long url
   }
   return Response.redirect(FALLBACK, 301) // return the fallback
+}
+
+/**
+ * Handle preflight checks for
+*/
+function handleOptions(request) {
+  // Make sure the necessary headers are present
+  // for this to be a valid pre-flight request
+  let headers = request.headers;
+  if (
+    headers.get("Origin") !== null &&
+    headers.get("Access-Control-Request-Method") !== null &&
+    headers.get("Access-Control-Request-Headers") !== null
+  ){
+    // Handle CORS pre-flight request.
+    // If you want to check or reject the requested method + headers
+    // you can do that here.
+    let respHeaders = {
+      ...corsHeaders,
+    // Allow all future content Request headers to go back to browser
+    // such as Authorization (Bearer) or X-Client-Name-Version
+      "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers"),
+    }
+
+    return new Response(null, {
+      headers: respHeaders,
+    })
+  }
+  else {
+    // Handle standard OPTIONS request.
+    // If you want to allow other HTTP Methods, you can do that here.
+    return new Response(null, {
+      headers: {
+        Allow: "GET, HEAD, POST, OPTIONS",
+      },
+    })
+  }
 }
 
 /**
@@ -153,12 +190,10 @@ async function routerMe(request){
     
     if ( action == "add" ){
       newshort = await addURL(jsonBody)
-      console.log('broke here 3')
       return new Response(newshort)
     } else if ( action == "metrics" ){
-      console.log('broke here 4')
       metrics = await listMetrics()
-      return new Response(metrics)
+      return new Response(metrics, { headers: corsHeaders })
     } else {
       return new Response(JSON.stringify({
         "message" : "Invalid Action"
@@ -184,5 +219,8 @@ addEventListener("fetch", event => {
   }
   else if (request.method === "GET") {
     return event.respondWith(shortResponse(request))
+  }
+  else if (request.method === "OPTIONS"){
+    event.respondWith(handleOptions(request))
   }
 })
