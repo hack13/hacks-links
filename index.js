@@ -124,6 +124,11 @@ async function listMetrics(){
 async function shortResponse(request) {
   const requestURL = new URL(request.url)
   const path = requestURL.pathname.split("/")[1]
+
+  if (path == null) {
+    return Response.redirect(FALLBACK, 301)
+  }
+
   const location = await LINKS.get(path, {cacheTtl: 86400})
   let linkcount = await LINKCOUNT.get(path)
 
