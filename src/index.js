@@ -110,7 +110,11 @@ router.post('/metrics', async request => {
 
         let build = '['+buildup+']'
 
-        return new Response(build, {'Content-type': 'application/json'})
+        const headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Content-type': 'application/json',
+          };
+        return new Response(build, { headers })
     }else{
         return new Response('Failed to authenticate')
     }
