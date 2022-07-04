@@ -106,7 +106,7 @@ router.post('/metrics', async request => {
             buildup.push(JSON.stringify({
                 "slug" : `${allLinks.keys[i].name}`,
                 "longURL": `${parsedLinkData.longURL}`,
-                "counters": `${parsedLinkData.count}`
+                "count": `${parsedLinkData.count}`
             }))
         }
 
