@@ -1,4 +1,5 @@
 import { Router } from 'itty-router'
+import { handleCors } from './coreshelper'
 
 /**
  * Simple function that helps generate a URI for when a custom URI isn't specified
@@ -89,6 +90,7 @@ router.post('/add', async request => {
 })
 
 // Add call for getting metrics
+router.options('/metrics', handleCors({ methods: 'POST', maxAge: 86400 }));
 router.post('/metrics', async request => {
     const { headers } = await request
     const apiToken = headers.get('X-API-KEY') || ""
@@ -109,12 +111,8 @@ router.post('/metrics', async request => {
         }
 
         let build = '['+buildup+']'
-
-        const headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Content-type': 'application/json',
-          };
-        return new Response(build, { headers })
+        
+        return new Response(build, {headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}})
     }else{
         return new Response('Failed to authenticate')
     }
@@ -124,6 +122,4 @@ router.post('/metrics', async request => {
 router.all('*', () => new Response('Not Found.', { status: 404 }))
 
 // attach the router "handle" to the event handler
-addEventListener('fetch', event =>
-  event.respondWith(router.handle(event.request))
-)
+addEventListener('fetch', event => event.respondWith(router.handle(event.request)))
