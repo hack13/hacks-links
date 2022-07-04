@@ -46,15 +46,21 @@ router.get('/:slug', async ({ params }) => {
         return Response.redirect(FALLBACK, 301)
     } else {
         const location = JSON.stringify(slugData.longURL).replace(/"/g, "")
-        const count = JSON.stringify(slugData.count)
-        let newCount = parseInt(count) + 1
-        await LINKS.put(params.slug, JSON.stringify({'longURL': location, 'count': newCount }))
+        const count = JSON.stringify(slugData.count).replace(/"/g, "")
+        // Check if the count is missing... and fix it
+        if (count === "NaN") {
+            await LINKS.put(params.slug, JSON.stringify({'longURL': location, 'count': '1' }))
+        } else {
+            let newCount = parseInt(count) + 1
+            await LINKS.put(params.slug, JSON.stringify({'longURL': location, 'count': `${newCount}` }))
+        }
+        
         return Response.redirect(location, 301)
     }
     
 })
 
-// POST to the collection (we'll use async here)
+// POST to add URLs to the system
 router.post('/add', async request => {
     const { headers } = await request
     const apiToken = headers.get('X-API-KEY') || ""
@@ -74,9 +80,37 @@ router.post('/add', async request => {
 
         let shortURI = `${SHORTDOMAIN}/${shortID}`
 
-        await LINKS.put(shortID, JSON.stringify({'longURL': longURL, 'count': 0 }))
+        await LINKS.put(shortID, JSON.stringify({'longURL': longURL, 'count': '0' }))
 
         return new Response(JSON.stringify({"shorturl" : shortURI }))
+    }else{
+        return new Response('Failed to authenticate')
+    }
+})
+
+// Add call for getting metrics
+router.post('/metrics', async request => {
+    const { headers } = await request
+    const apiToken = headers.get('X-API-KEY') || ""
+
+    if ( apiToken === TOKEN ) {
+        let allLinks = await LINKS.list()
+        let allLinksLength = allLinks.keys.length
+        let buildup = []
+
+        for (let i = 0 ; i < allLinksLength; i++) {
+            let linkData = await LINKS.get(allLinks.keys[i].name)
+            let parsedLinkData = JSON.parse(linkData)
+            buildup.push(JSON.stringify({
+                "slug" : `${allLinks.keys[i].name}`,
+                "longURL": `${parsedLinkData.longURL}`,
+                "counters": `${parsedLinkData.count}`
+            }))
+        }
+
+        let build = '['+buildup+']'
+
+        return new Response(build, {'Content-type': 'application/json'})
     }else{
         return new Response('Failed to authenticate')
     }
