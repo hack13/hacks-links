@@ -62,6 +62,36 @@ Example Response:
 }
 ```
 
+### Export
+POST Request **NOTE:** You must send your API Token via header "X-API-KEY"
+
+Dumps every link in the KV namespace as CSV, ready to import elsewhere. The body is optional
+&mdash; with no body you get the YOURLS layout.
+```json3
+{
+    "format" : "yourls" //optional, "yourls" (default) or "raw"
+}
+```
+Example Response (`format: "yourls"`), matching the columns of the YOURLS `yourls_url` table:
+```csv
+keyword,url,title,timestamp,ip,clicks
+test,https://hack13.me/,,2024-05-01 12:00:00,,2
+zkQPr,https://example.com/lkdjf3432sef,,2024-05-01 12:00:00,,0
+```
+Example Response (`format: "raw"`):
+```csv
+slug,longURL,count
+test,https://hack13.me/,2
+zkQPr,https://example.com/lkdjf3432sef,0
+```
+`title` and `ip` are always empty and `timestamp` is the time of the export, since none of the
+three are tracked here. Records saved before the counter existed export with a count of `0`.
+
+Save it straight to a file with:
+```bash
+curl -X POST https://linksite.com/export -H "X-API-KEY: $TOKEN" -o links-export.csv
+```
+
 ## Configuration
 
 **Wrangler Config**
